@@ -157,6 +157,7 @@ parse_symbol() {
 
 	# Strip the symbol name so that we could look it up
 	local name=${symbol%+*}
+	local shortname=${name#"dfs$"}
 
 	# Use 'nm vmlinux' to figure out the base address of said symbol.
 	# It's actually faster to call it every time than to load it

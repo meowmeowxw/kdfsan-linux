@@ -10,6 +10,7 @@
 #include <linux/mm_types.h>
 #include <linux/string.h>
 #include <linux/mmap_lock.h>
+#include <linux/kdfsan.h>
 #include <asm/asm.h>
 #include <asm/page.h>
 #include <asm/smap.h>
@@ -84,6 +85,7 @@ extern int __get_user_bad(void);
 		     : "0" (ptr), [size] "i" (sizeof(*(ptr))));		\
 	instrument_get_user(__val_gu);					\
 	(x) = (__force __typeof__(*(ptr))) __val_gu;			\
+	kdfsan_policy_usercopy((void *)&(x), sizeof(*(ptr)), dfsan_get_label((long) (ptr))); \
 	__builtin_expect(__ret_gu, 0);					\
 })
 
@@ -300,7 +302,8 @@ do {									\
 		     _ASM_EXTABLE_UA(1b, %l2)				\
 		     : [output] ltype(x)				\
 		     : [umem] "m" (__m(addr))				\
-		     : : label)
+		     : : label);					\
+	kdfsan_policy_usercopy((void *)&(x), sizeof(*(addr)), dfsan_get_label((long) (addr)))
 
 #else // !CONFIG_CC_HAS_ASM_GOTO_OUTPUT
 

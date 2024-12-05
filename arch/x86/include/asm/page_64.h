@@ -7,6 +7,7 @@
 #ifndef __ASSEMBLY__
 #include <asm/cpufeatures.h>
 #include <asm/alternative.h>
+#include <linux/kdfsan.h>
 
 #include <linux/kmsan-checks.h>
 
@@ -51,15 +52,23 @@ static inline void clear_page(void *page)
 	 * below clobbers @page, so we perform unpoisoning before it.
 	 */
 	kmsan_unpoison_memory(page, PAGE_SIZE);
+	void *page_copy = page;
 	alternative_call_2(clear_page_orig,
 			   clear_page_rep, X86_FEATURE_REP_GOOD,
 			   clear_page_erms, X86_FEATURE_ERMS,
 			   "=D" (page),
 			   "D" (page)
 			   : "cc", "memory", "rax", "rcx");
+	dfsan_set_label(0, page_copy, PAGE_SIZE);
 }
 
-void copy_page(void *to, void *from);
+void copy_page_orig(void *to, void *from);
+
+static inline void copy_page(void *to, void *from)
+{
+	copy_page_orig(to, from);
+	dfsan_mem_transfer_callback(to, from, PAGE_SIZE);
+}
 
 #ifdef CONFIG_X86_5LEVEL
 /*

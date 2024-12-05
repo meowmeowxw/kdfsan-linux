@@ -77,7 +77,6 @@
 #include <linux/perf_event.h>
 #include <linux/ptrace.h>
 #include <linux/vmalloc.h>
-#include <linux/sched/sysctl.h>
 
 #include <trace/events/kmem.h>
 
@@ -3373,6 +3372,7 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 			delayacct_wpcopy_end();
 			return err == -EHWPOISON ? VM_FAULT_HWPOISON : 0;
 		}
+		kdfsan_copy_page_shadow(&new_folio->page, &old_folio->page);
 		kmsan_copy_page_meta(&new_folio->page, vmf->page);
 	}
 

@@ -6,6 +6,24 @@
 # Include the generic Makefile to check the built vDSO:
 include $(srctree)/lib/vdso/Makefile
 
+# Sanitizer runtimes are unavailable and cannot be linked here.
+KASAN_SANITIZE			:= n
+UBSAN_SANITIZE			:= n
+KCSAN_SANITIZE			:= n
+KDFSAN_SANITIZE_vclock_gettime.o := n
+KDFSAN_SANITIZE_vgetcpu.o	:= n
+OBJECT_FILES_NON_STANDARD	:= y
+
+# Prevents link failures: __sanitizer_cov_trace_pc() is not linked in.
+KCOV_INSTRUMENT		:= n
+
+VDSO64-$(CONFIG_X86_64)		:= y
+VDSOX32-$(CONFIG_X86_X32_ABI)	:= y
+VDSO32-$(CONFIG_X86_32)		:= y
+VDSO32-$(CONFIG_IA32_EMULATION)	:= y
+
+# files to link into the vdso
+vobjs-y := vdso-note.o vclock_gettime.o vgetcpu.o
 # Files to link into the vDSO:
 vobjs-y := vdso-note.o vclock_gettime.o vgetcpu.o vgetrandom.o vgetrandom-chacha.o
 vobjs32-y := vdso32/note.o vdso32/system_call.o vdso32/sigreturn.o

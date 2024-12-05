@@ -17,6 +17,7 @@
 #include <linux/bitops.h>
 #include <linux/kasan-checks.h>
 #include <linux/string.h>
+#include <linux/kdfsan.h>
 
 #include <asm/asm-extable.h>
 #include <asm/cpufeature.h>
@@ -256,6 +257,7 @@ do {									\
 	if (access_ok(__p, sizeof(*__p))) {				\
 		__p = uaccess_mask_ptr(__p);				\
 		__raw_get_user((x), __p, __gu_failed);			\
+		kdfsan_policy_usercopy((void *)&(x), sizeof(*(__p)), dfsan_union(dfsan_get_label((long) (ptr)), dfsan_get_label((long) (__p)))); \
 	} else {							\
 	__gu_failed:							\
 		(x) = (__force __typeof__(x))0; (err) = -EFAULT;	\
@@ -399,6 +401,7 @@ extern unsigned long __must_check __arch_copy_from_user(void *to, const void __u
 	__acfu_ret = __arch_copy_from_user((to),			\
 				      __uaccess_mask_ptr(from), (n));	\
 	uaccess_ttbr0_disable();					\
+	kdfsan_policy_usercopy(to, n - __acfu_ret, dfsan_get_label((long) from)); \
 	__acfu_ret;							\
 })
 

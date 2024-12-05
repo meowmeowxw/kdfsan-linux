@@ -98,6 +98,11 @@ enum {
 #else
 #define ___GFP_NOLOCKDEP	0
 #endif
+#ifdef CONFIG_KDFSAN
+#define ___GFP_NO_KDFSAN_SHADOW 0x1000000u
+#else
+#define ___GFP_NO_KDFSAN_SHADOW 0
+#endif
 #ifdef CONFIG_SLAB_OBJ_EXT
 #define ___GFP_NO_OBJ_EXT       BIT(___GFP_NO_OBJ_EXT_BIT)
 #else
@@ -292,6 +297,7 @@ enum {
 #define __GFP_NOWARN	((__force gfp_t)___GFP_NOWARN)
 #define __GFP_COMP	((__force gfp_t)___GFP_COMP)
 #define __GFP_ZERO	((__force gfp_t)___GFP_ZERO)
+#define __GFP_NO_KDFSAN_SHADOW  ((__force gfp_t)___GFP_NO_KDFSAN_SHADOW)
 #define __GFP_ZEROTAGS	((__force gfp_t)___GFP_ZEROTAGS)
 #define __GFP_SKIP_ZERO ((__force gfp_t)___GFP_SKIP_ZERO)
 #define __GFP_SKIP_KASAN ((__force gfp_t)___GFP_SKIP_KASAN)
@@ -300,7 +306,14 @@ enum {
 #define __GFP_NOLOCKDEP ((__force gfp_t)___GFP_NOLOCKDEP)
 
 /* Room for N __GFP_FOO bits */
-#define __GFP_BITS_SHIFT ___GFP_LAST_BIT
+#if defined(CONFIG_KDFSAN)
+#define __GFP_BITS_SHIFT 25
+#elif defined(CONFIG_LOCKDEP)
+#define __GFP_BITS_SHIFT 24
+#else
+#define __GFP_BITS_SHIFT 23
+#endif
+// #define __GFP_BITS_SHIFT ___GFP_LAST_BIT
 #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
 
 /**

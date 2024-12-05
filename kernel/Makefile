@@ -41,6 +41,14 @@ UBSAN_SANITIZE_kcov.o := n
 KMSAN_SANITIZE_kcov.o := n
 CFLAGS_kcov.o := $(call cc-option, -fno-conserve-stack) -fno-stack-protector
 
+ifdef CONFIG_ARM64
+KDFSAN_SANITIZE_kcov.o := n
+KDFSAN_SANITIZE_sys_ni.o := n
+endif
+
+# Don't instrument error handlers
+CFLAGS_REMOVE_cfi.o := $(CC_FLAGS_CFI)
+
 obj-y += sched/
 obj-y += locking/
 obj-y += power/
