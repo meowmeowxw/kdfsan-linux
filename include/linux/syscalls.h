@@ -133,13 +133,14 @@ struct mnt_id_req;
 #define __SC_TEST(t, a) (void)BUILD_BUG_ON_ZERO(!__TYPE_IS_LL(t) && sizeof(t) > sizeof(long))
 
 #define __MAPN0(n,m,...)
-#define __MAPN1(n,m,t,a,...) m(t,a,n-1)
-#define __MAPN2(n,m,t,a,...) m(t,a,n-2), __MAPN1(n,m,__VA_ARGS__)
-#define __MAPN3(n,m,t,a,...) m(t,a,n-3), __MAPN2(n,m,__VA_ARGS__)
-#define __MAPN4(n,m,t,a,...) m(t,a,n-4), __MAPN3(n,m,__VA_ARGS__)
-#define __MAPN5(n,m,t,a,...) m(t,a,n-5), __MAPN4(n,m,__VA_ARGS__)
-#define __MAPN6(n,m,t,a,...) m(t,a,n-6), __MAPN5(n,m,__VA_ARGS__)
+#define __MAPN1(n,m,t,a,...) do { m(t,a,n-1); } while(0)
+#define __MAPN2(n,m,t,a,...) do { m(t,a,n-2); __MAPN1(n,m,__VA_ARGS__); } while(0)
+#define __MAPN3(n,m,t,a,...) do { m(t,a,n-3); __MAPN2(n,m,__VA_ARGS__); } while(0)
+#define __MAPN4(n,m,t,a,...) do { m(t,a,n-4); __MAPN3(n,m,__VA_ARGS__); } while(0)
+#define __MAPN5(n,m,t,a,...) do { m(t,a,n-5); __MAPN4(n,m,__VA_ARGS__); } while(0)
+#define __MAPN6(n,m,t,a,...) do { m(t,a,n-6); __MAPN5(n,m,__VA_ARGS__); } while(0)
 #define __MAPN(n,...) __MAPN##n(n,__VA_ARGS__)
+
 #ifdef CONFIG_KDFSAN
 #include <linux/kdfsan.h>
 #define __SC_KDF_TAINT(t,a,n) kdfsan_policy_syscall_arg((void*)&a,sizeof(t),n)
@@ -1319,3 +1320,4 @@ int __sys_getsockopt(int fd, int level, int optname, char __user *optval,
 int __sys_setsockopt(int fd, int level, int optname, char __user *optval,
 		int optlen);
 #endif
+

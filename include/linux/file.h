@@ -12,7 +12,6 @@
 #include <linux/errno.h>
 #include <linux/cleanup.h>
 #include <linux/err.h>
-#include <linux/kdfsan.h>
 
 struct file;
 
@@ -75,26 +74,9 @@ extern struct file *fget_raw(unsigned int fd);
 extern struct file *fget_task(struct task_struct *task, unsigned int fd);
 extern void __f_unlock_pos(struct file *);
 
-static inline struct fd __to_fd(unsigned long v)
-{
-	return (struct fd){(struct file *)(v & ~3),v & 3};
-}
-
-static inline struct fd fdget(unsigned int fd)
-{
-	dfsan_set_label(0, &fd, sizeof(fd));
-	return __to_fd(__fdget(fd));
-}
-
-static inline struct fd fdget_raw(unsigned int fd)
-{
-	return __to_fd(__fdget_raw(fd));
-}
-
-static inline struct fd fdget_pos(unsigned int fd)
-{
-	return __to_fd(__fdget_pos(fd));
-}
+struct fd fdget(unsigned int fd);
+struct fd fdget_raw(unsigned int fd);
+struct fd fdget_pos(unsigned int fd);
 
 static inline void fdput_pos(struct fd f)
 {

@@ -30,6 +30,7 @@
 #include <linux/crash_dump.h>
 #include <linux/execmem.h>
 #include <linux/vmstat.h>
+#include <linux/kdfsan.h>
 #include "internal.h"
 #include "slab.h"
 #include "shuffle.h"
@@ -2648,6 +2649,7 @@ void __init mm_core_init(void)
 	mem_debugging_and_hardening_init();
 	kfence_alloc_pool_and_metadata();
 	report_meminit();
+	kdfsan_init_shadow();
 	kmsan_init_shadow();
 	stack_depot_early_init();
 	mem_init();
