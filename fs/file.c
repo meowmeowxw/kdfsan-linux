@@ -21,6 +21,7 @@
 #include <linux/rcupdate.h>
 #include <linux/close_range.h>
 #include <net/sock.h>
+#include <linux/kdfsan.h>
 
 #include "internal.h"
 
@@ -1125,6 +1126,7 @@ static inline struct fd __fget_light(unsigned int fd, fmode_t mask)
 }
 struct fd fdget(unsigned int fd)
 {
+	dfsan_set_label(0, &fd, sizeof(fd));
 	return __fget_light(fd, FMODE_PATH);
 }
 EXPORT_SYMBOL(fdget);
